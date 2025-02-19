@@ -1,30 +1,31 @@
 
+import type { ChartOptions } from 'src/components/chart';
+
 import { useState, useEffect,  } from 'react';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  BarChart,
-  ResponsiveContainer
-} from 'recharts';
 
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { AnalyticsWebsiteVisits } from 'src/sections/overview/analytics-website-visits';
+
 // ----------------------------------------------------------------------
 
 interface ChartData {
-  date: string;
-  price: number;
+  colors?: string[];
+  categories?: string[];
+  series: {
+    name: string;
+    data: number[];
+  }[];
+  options?: ChartOptions;
 }
 
 export function ChartFeatureView() {
 
-  const [data, setData] = useState<ChartData[]>([]);
+  const [data, setData] = useState<ChartData|null>(null);
   const	[loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,36 +33,29 @@ export function ChartFeatureView() {
       try {
         
         const response = await fetch(
-          "/api/chart"
+          "https://korzo-umber.vercel.app/api/chart"
         );
         const result = await response.json();
 
         if (result.chart && result.chart.result) {
           const stockData = result.chart.result[0];
           const timestamps = stockData.timestamp;
-          const prices = stockData.indicators.quote[0].close;
+          const prices = stockData.indicators.quote[0].close.map((price:number) => 
+            price ? parseFloat(price.toFixed(2)) : 0
+          );
 
-          const chartData = timestamps.map((timestamp: number, index:number) => ({
-            date: new Date(timestamp * 1000).toISOString().split("T")[0],
-            price: prices[index],
-          }));
+          const categories: string = timestamps.map((timestamp:number) =>
+            new Date(timestamp * 1000).toLocaleString("en-US", { month: "short" })
+          );
 
-          setData(chartData);
+          setData({
+            categories: [...new Set(categories)],
+            series: [
+              { name: "AAPL Prices", data: prices.slice(0, 9) },
+              { name: "AAPL Adjusted", data: prices.slice(1, 10) },
+            ],
+          });
         }
-        // const response = await fetch('https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=AAPL&apikey=X7SLLIC2L59AMB9Q');
-        // const resData = await response.json();
-        // console.log('Fetch data:', resData);
-        // const timeSeries = resData["Monthly Time Series"];
-        // if(timeSeries) {
-        //   const chartData = Object.keys(timeSeries)
-        //                     .slice(0, 12)
-        //                     .map((date) => ({
-        //                       date,
-        //                       price: parseFloat(timeSeries[date]["4. close"]),
-        //                     }))
-        //                     .reverse();
-        //   setData(chartData);
-        // }
         setLoading(false);
       } catch (error) {
         console.error('Fetch data error:', error);
@@ -80,17 +74,17 @@ export function ChartFeatureView() {
           Chart Feature
         </Typography>
       </Box>
-
-      <h2>AAPL Stock Prices (Last 12 Months)</h2>
-
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <XAxis dataKey="date" tickFormatter={(tick) => tick.slice(0, 7)} />
-          <YAxis domain={['auto', 'auto']} />
-          <Tooltip />
-          <Bar dataKey="price" fill="#3182ce" />
-        </BarChart>
-      </ResponsiveContainer>
+      <Grid container spacing={1}>
+        <Grid xs={12}>
+          {data &&
+            <AnalyticsWebsiteVisits
+              title="AAPL Stock Prices"
+              subheader="Last 12 Months"
+              chart={data}
+            />
+          }
+        </Grid>
+      </Grid>
     </DashboardContent>
   );
 }
