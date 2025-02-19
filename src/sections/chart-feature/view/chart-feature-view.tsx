@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import yahooFinance from "yahoo-finance2";
+
 import { useState, useEffect,  } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
