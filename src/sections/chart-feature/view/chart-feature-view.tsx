@@ -32,9 +32,7 @@ export function ChartFeatureView() {
     const fetchData = async () => {
       try {
         
-        const response = await fetch(
-          "https://korzo-umber.vercel.app/api/chart"
-        );
+        const response = await fetch("/api/chart");
         const result = await response.json();
 
         if (result.chart && result.chart.result) {
