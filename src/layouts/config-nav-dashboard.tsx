@@ -43,4 +43,9 @@ export const navData = [
     path: '/404',
     icon: icon('ic-disabled'),
   },
+  {
+    title: 'Chart Feature',
+    path: '/chart-feature',
+    icon: icon('ic-chart-feature'),
+  }
 ];

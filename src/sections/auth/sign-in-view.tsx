@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -12,17 +13,51 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
+import { setCookie } from 'src/utils/cookie';
 
 // ----------------------------------------------------------------------
 
 export function SignInView() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = useCallback(() => {
-    router.push('/');
-  }, [router]);
+  const handleSignIn = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_AUTH}/user_management/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: import.meta.env.VITE_API_KEY,
+          client_secret: import.meta.env.VITE_CLIENT_SECRET,
+          grant_type: 'password',
+          email,
+          password,
+        }),
+      });
+      const data = await response.json();
+      if (data.user) {
+        setCookie('ck-user', JSON.stringify(data), 1);
+        
+        router.push('/');
+      } else {
+        setError(data.error_description);
+      }
+    } catch (err) {
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+
+  };
 
   const renderForm = (
     <Box display="flex" flexDirection="column" alignItems="flex-end">
@@ -30,7 +65,8 @@ export function SignInView() {
         fullWidth
         name="email"
         label="Email address"
-        defaultValue="hello@gmail.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{ mb: 3 }}
       />
@@ -43,7 +79,8 @@ export function SignInView() {
         fullWidth
         name="password"
         label="Password"
-        defaultValue="@demo1234"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         InputLabelProps={{ shrink: true }}
         type={showPassword ? 'text' : 'password'}
         InputProps={{
@@ -64,9 +101,10 @@ export function SignInView() {
         type="submit"
         color="inherit"
         variant="contained"
+        disabled={loading}
         onClick={handleSignIn}
       >
-        Sign in
+        {loading ? 'Loading...' : 'Sign in'}
       </LoadingButton>
     </Box>
   );

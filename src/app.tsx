@@ -1,5 +1,7 @@
 import 'src/global.css';
 
+import { AuthKitProvider } from '@workos-inc/authkit-react';
+
 import Fab from '@mui/material/Fab';
 
 import { Router } from 'src/routes/sections';
@@ -36,9 +38,11 @@ export default function App() {
   );
 
   return (
-    <ThemeProvider>
-      <Router />
-      {githubButton}
-    </ThemeProvider>
+    <AuthKitProvider clientId='client_01JME87KTV4TV26WN7V5GX7QAC'>
+      <ThemeProvider>
+        <Router />
+        {githubButton}
+      </ThemeProvider>
+    </AuthKitProvider>
   );
 }

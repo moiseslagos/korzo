@@ -26,6 +26,7 @@ module.exports = {
    */
   rules: {
     // general
+    'no-plusplus': 'off',
     'no-alert': 0,
     camelcase: 0,
     'no-console': 0,
