@@ -1,10 +1,6 @@
 {
-  "functions": {
-    "api/chart.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
+    { "source": "/api/chart", "destination": "/api/chart.js" },
     {
       "source": "/(.*)",
       "destination": "/"
